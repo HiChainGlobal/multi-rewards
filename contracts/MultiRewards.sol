@@ -470,10 +470,13 @@ contract MultiRewards is ReentrancyGuard, Pausable {
 
     function stake(uint256 amount) external nonReentrant notPaused updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
+        uint256 previousBalance = IERC20(stakingToken).balanceOf(address(this));
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit Staked(msg.sender, amount);
+        uint256 actualAmount = IERC20(stakingToken).balanceOf(address(this)).sub(previousBalance);
+        actualAmount = Math.min(actualAmount, amount);
+        _totalSupply = _totalSupply.add(actualAmount);
+        _balances[msg.sender] = _balances[msg.sender].add(actualAmount);
+        emit Staked(msg.sender, actualAmount);
     }
 
     function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
