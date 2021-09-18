@@ -418,7 +418,9 @@ contract MultiRewards is ReentrancyGuard, Pausable {
         public
         onlyOwner
     {
-        require(rewardData[_rewardsToken].rewardsDuration == 0);
+        require(rewardData[_rewardsToken].rewardsDuration == 0, "reward data of token has been added");
+        require(_rewardsToken != address(0) && _rewardsDistributor != address(0), "Zero address not allowed");
+        require(_rewardsDuration != 0, "rewardsDuration cannot be zero");
         rewardTokens.push(_rewardsToken);
         rewardData[_rewardsToken].rewardsDistributor = _rewardsDistributor;
         rewardData[_rewardsToken].rewardsDuration = _rewardsDuration;
