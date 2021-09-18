@@ -420,10 +420,12 @@ contract MultiRewards is ReentrancyGuard, Pausable {
     {
         require(rewardData[_rewardsToken].rewardsDuration == 0, "reward data of token has been added");
         require(_rewardsToken != address(0) && _rewardsDistributor != address(0), "Zero address not allowed");
-        require(_rewardsDuration != 0, "rewardsDuration cannot be zero");
+        require(_rewardsDuration > 0, "Reward duration must be non-zero");
         rewardTokens.push(_rewardsToken);
         rewardData[_rewardsToken].rewardsDistributor = _rewardsDistributor;
         rewardData[_rewardsToken].rewardsDuration = _rewardsDuration;
+        emit RewardsDistributorUpdated(_rewardsToken, _rewardsDistributor);
+        emit RewardsDurationUpdated(_rewardsToken, _rewardsDuration);
     }
 
     /* ========== VIEWS ========== */
@@ -461,7 +463,9 @@ contract MultiRewards is ReentrancyGuard, Pausable {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function setRewardsDistributor(address _rewardsToken, address _rewardsDistributor) external onlyOwner {
+        require(_rewardsToken != address(0) && _rewardsDistributor != address(0), "Zero address not allowed");
         rewardData[_rewardsToken].rewardsDistributor = _rewardsDistributor;
+        emit RewardsDistributorUpdated(_rewardsToken, _rewardsDistributor);
     }
 
     function stake(uint256 amount) external nonReentrant notPaused updateReward(msg.sender) {
@@ -528,6 +532,7 @@ contract MultiRewards is ReentrancyGuard, Pausable {
     }
 
     function setRewardsDuration(address _rewardsToken, uint256 _rewardsDuration) external {
+        require(_rewardsToken != address(0), "Zero address not allowed");
         require(
             block.timestamp > rewardData[_rewardsToken].periodFinish,
             "Reward period still active"
@@ -559,6 +564,7 @@ contract MultiRewards is ReentrancyGuard, Pausable {
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, address indexed rewardsToken, uint256 reward);
-    event RewardsDurationUpdated(address token, uint256 newDuration);
+    event RewardsDistributorUpdated(address indexed token, address indexed newDistributor);
+    event RewardsDurationUpdated(address indexed token, uint256 newDuration);
     event Recovered(address token, uint256 amount);
 }
